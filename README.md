@@ -1,2 +1,2 @@
 # Messweb_server
-# https://github.com/Piotrek404/Messweb-client - client 
+## You can see a messweb client: https://github.com/Piotrek404/Messweb-client
