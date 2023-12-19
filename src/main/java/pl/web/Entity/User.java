@@ -1,8 +1,10 @@
-package Entity;
+package pl.web.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Arrays;
+import java.util.List;
 
 
 @Entity
@@ -17,7 +19,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     private String email;
     @NonNull
     private String username;
@@ -25,7 +27,25 @@ public class User {
     @NonNull
     private String password;
 
-    public int getId() {
+    private String status;
+
+    private static final List<String> availableStatuses = Arrays.asList(
+            "admin", "banned", "user"
+    );
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        if (availableStatuses.contains(status.toLowerCase())) {
+            this.status = status;
+        }else {
+            this.status = "user";
+        }
+    }
+
+    public Long getId() {
         return id;
     }
 
@@ -39,10 +59,6 @@ public class User {
 
     public String getPassword() {
         return password;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public void setEmail(String email) {
