@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import pl.web.Entity.User;
 import pl.web.Repository.UserRepository;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -62,7 +64,15 @@ public class UserService {
         user.setStatus(newStatus);
         userRepository.save(user);
     }
-
+    //___________GetMapping___________
+    @GetMapping("/user")
+    public ResponseEntity users() throws JsonProcessingException {
+        List<User> users = userRepository.findAll();
+        if (users.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+        return ResponseEntity.ok(objectMapper.writeValueAsString(users));
+    }
     //___________PostMapping___________
     @PostMapping("/users")
     public ResponseEntity addUser(@RequestBody User user) {
@@ -159,9 +169,8 @@ public class UserService {
         }
         Optional<User> userOptional = userRepository.findByEmail(user.getEmail());
         if (userOptional.isPresent()) {
-            userOptional.get().setPassword("************");
+            userOptional.get().setPassword("");
             try {
-                settingsService.generateDefualtSettings(userOptional.get());
                 return ResponseEntity.ok(objectMapper.writeValueAsString(userOptional));
             } catch (JsonProcessingException e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

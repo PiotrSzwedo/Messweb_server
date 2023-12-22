@@ -1,9 +1,13 @@
 package pl.web.Entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "settings")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Settings {
 
     @Id

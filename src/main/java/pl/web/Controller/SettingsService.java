@@ -21,7 +21,7 @@ public class SettingsService {
     @Autowired
     ObjectMapper objectMapper;
 
-    public void generateDefualtSettings(User user){
+    public void generateDefualtSettings(User user) {
         Optional<Settings> settingsOptional = settingsRepository.findByUserid(user.getId());
         if (settingsOptional.isEmpty()) {
             Settings settings = new Settings();
@@ -36,20 +36,23 @@ public class SettingsService {
     @PostMapping("/settings")
     public ResponseEntity getSettings(@RequestBody User user) throws JsonProcessingException {
         Optional<Settings> settingsOptional = settingsRepository.findByUserid(user.getId());
-        if (settingsOptional.isEmpty()){
+        if (settingsOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
-        return  ResponseEntity.ok(objectMapper.writeValueAsString(settingsOptional));
+        return ResponseEntity.ok(objectMapper.writeValueAsString(settingsOptional));
     }
+
     @PostMapping("/settings-change")
-    public ResponseEntity setSettings(@RequestBody Settings settings){
+    public ResponseEntity setSettings(@RequestBody Settings settings) {
         Optional<Settings> settingsOptional = settingsRepository.findByUserid(settings.getUserid());
         if (settingsOptional.isEmpty()) return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        if (!settingsOptional.get().getShowEmail() == settings.getShowEmail()) settingsOptional.get().setShowEmail(settings.getShowEmail());
-        if (!settingsOptional.get().getShowName() == settings.getShowName()) settingsOptional.get().setShowName(settings.getShowName());
-        if (!settingsOptional.get().getShowStatus() == settings.getShowStatus()) settingsOptional.get().setShowStatus(settings.getShowStatus());
+        if (!settingsOptional.get().getShowEmail() == settings.getShowEmail())
+            settingsOptional.get().setShowEmail(settings.getShowEmail());
+        if (!settingsOptional.get().getShowName() == settings.getShowName())
+            settingsOptional.get().setShowName(settings.getShowName());
+        if (!settingsOptional.get().getShowStatus() == settings.getShowStatus())
+            settingsOptional.get().setShowStatus(settings.getShowStatus());
         settingsRepository.save(settingsOptional.get());
         return ResponseEntity.ok().build();
     }
-
 }
