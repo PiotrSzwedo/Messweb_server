@@ -117,51 +117,31 @@ public class UserService {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/user-name")
-    public ResponseEntity changeName(@RequestBody User user, @RequestBody String newName) {
-        if (!emptyContent(user.getEmail(), user.getUsername(), user.getPassword(), false, false, false) || newName.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        Optional<User> userOptional = userRepository.findByEmail(user.getEmail());
-        if (userOptional.isPresent()) {
-            if (wrongPassword(userOptional, user)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            userOptional.get().setUsername(newName);
-            userRepository.save(userOptional.get());
-            return ResponseEntity.ok().build();
-        } else return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
-
-    @PostMapping("/user-email")
-    public ResponseEntity changeEmail(@RequestBody User user, @RequestBody String newEmail) {
-        if (emptyContent(user.getEmail(), user.getUsername(), user.getPassword(), false, true, false) || newEmail.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } else {
-            Optional<User> userOptional = userRepository.findByEmail(user.getEmail());
-            if (userOptional.isEmpty() || wrongPassword(userOptional, user)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            } else {
-                userOptional.get().setEmail(newEmail);
-                userRepository.save(userOptional.get());
-                return ResponseEntity.ok().build();
-            }
+    @PostMapping("/user-data-chnage")
+    public ResponseEntity changeUserData(@RequestBody User user){
+        Optional<User> user1 = userRepository.findUserAllById(user.getId());
+        if (user1.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-    }
-
-    @PostMapping("/user-password")
-    public ResponseEntity changePassword(@RequestBody User user, @RequestBody String newPassword) {
-        if (emptyContent(user.getEmail(), user.getUsername(), user.getPassword(), false, true, false) || newPassword.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } else {
-            Optional<User> userOptional = userRepository.findByEmail(user.getEmail());
-            if (userOptional.isEmpty() || wrongPassword(userOptional, user)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            } else {
-                userOptional.get().setPassword(newPassword);
-                userRepository.save(userOptional.get());
-                return ResponseEntity.ok().build();
-            }
+        if (user.getStatus() != null && !user1.get().getStatus().equals(user.getStatus()) && !user.getStatus().isEmpty()){
+            //Changing user status
+            user1.get().setStatus(user.getStatus());
         }
+        if (user.getUsername() != null && !user1.get().getUsername().equals(user.getUsername()) && !user.getUsername().isEmpty()){
+            //Changing user name
+            user1.get().setUsername(user.getUsername());
+        }
+        if (user.getPassword() != null && !user1.get().getPassword().equals(user.getPassword()) && !user.getPassword().isEmpty()){
+            //Changing password
+            user1.get().setPassword(user.getPassword());
+        }
+        if (user.getEmail() != null && !user1.get().getEmail().equals(user.getEmail()) && !user.getEmail().isEmpty()){
+            //Changing user e-mail
+            user1.get().setEmail(user.getEmail());
+        }
+        userRepository.save(user1.get());
+        return ResponseEntity.ok().build();
     }
-
     @PostMapping("/user-data")
     public ResponseEntity getUserData(@RequestBody User user) {
         if (emptyContent(user.getEmail(), user.getUsername(), user.getPassword(), false, true, true)) {
