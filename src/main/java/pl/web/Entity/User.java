@@ -11,8 +11,6 @@ import java.util.List;
 @Table(name = "user")
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @RequiredArgsConstructor
 @ToString
 public class User {
@@ -29,6 +27,16 @@ public class User {
 
     private String status;
 
+    public User() {
+    }
+
+    public User(String email, String username, String password, String status) {
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.status = status;
+    }
+
     private static final List<String> availableStatuses = Arrays.asList(
             "admin", "banned", "user"
     );
@@ -40,7 +48,7 @@ public class User {
     public void setStatus(String status) {
         if (availableStatuses.contains(status.toLowerCase())) {
             this.status = status;
-        }else {
+        } else {
             this.status = "user";
         }
     }

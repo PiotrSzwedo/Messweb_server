@@ -9,7 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import pl.web.Entity.Post;
+import pl.web.Entity.PostEntity;
 import pl.web.Entity.User;
 import pl.web.Repository.PostRepository;
 import pl.web.Repository.UserRepository;
@@ -19,7 +19,7 @@ import java.util.Optional;
 
 //The class responsible for acting on posts
 @Controller
-public class PostService {
+public class PostController {
     @Autowired
     PostRepository postRepository;
     @Autowired
@@ -31,61 +31,62 @@ public class PostService {
     @GetMapping("/posts")
     //A method that sends json from the list of posts to the website
     public ResponseEntity Posts() throws JsonProcessingException {
-        List<Post> posts = postRepository.findAll();
-        if(posts.isEmpty()){
+        List<PostEntity> postEntities = postRepository.findAll();
+        if(postEntities.isEmpty()){
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
-        return ResponseEntity.ok(objectMapper.writeValueAsString(posts));
+        //objectMapper.writeValueAsString(postEntities)
+        return ResponseEntity.ok().build();
     }
 
     //____________PostMapping____________
-    @PostMapping("post-id")
-    //A method that finds post by id and sends result to the website
-    public ResponseEntity findPostById(@RequestBody Post post) throws JsonProcessingException {
-        Optional<Post> foundPost = postRepository.findById((long) post.getId());
+    @PostMapping("postEntity-id")
+    //A method that finds postEntity by id and sends result to the website
+    public ResponseEntity findPostById(@RequestBody PostEntity postEntity) throws JsonProcessingException {
+        Optional<PostEntity> foundPost = postRepository.findById((long) postEntity.getId());
         return ResponseEntity.ok(objectMapper.writeValueAsString(foundPost));
     }
 
     @PostMapping("post-title")
-    //A method that finds post by title and send result to the webside
-    public ResponseEntity findPostByTitle(@RequestBody Post post) throws JsonProcessingException {
-        if (emptyTitle(post)) {
-            Optional<Post> foundPost = postRepository.findByTitle(post.getTitle());
+    //A method that finds postEntity by title and send result to the webside
+    public ResponseEntity findPostByTitle(@RequestBody PostEntity postEntity) throws JsonProcessingException {
+        if (emptyTitle(postEntity)) {
+            Optional<PostEntity> foundPost = postRepository.findByTitle(postEntity.getTitle());
             return ResponseEntity.ok(objectMapper.writeValueAsString(foundPost));
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("post-add")
-    //A method for saveing post
-    public ResponseEntity addPost(@RequestBody Post post) {
-        if (emptyTitle(post) || post.getBody().isEmpty()) {
-            Post post1 = postRepository.save(post);
-            return ResponseEntity.ok(post1);
+    //A method for saveing postEntity
+    public ResponseEntity addPost(@RequestBody PostEntity postEntity) {
+        if (emptyTitle(postEntity) || postEntity.getBody().isEmpty()) {
+            PostEntity postEntity1 = postRepository.save(postEntity);
+            return ResponseEntity.ok(postEntity1);
         } else return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("post-delete")
-    //A method to deleteing post
-    public ResponseEntity deletePost(@RequestBody Post post) {
-        Optional<Post> deletePost = postRepository.findByTitle(post.getTitle());
+    //A method to deleteing postEntity
+    public ResponseEntity deletePost(@RequestBody PostEntity postEntity) {
+        Optional<PostEntity> deletePost = postRepository.findByTitle(postEntity.getTitle());
         postRepository.delete(deletePost.get());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/post/owner")
-    //A method that finds post's owner and sends result
-    public ResponseEntity findPostOwner(@RequestBody Post post) throws JsonProcessingException {
-        Optional<User> owner = userRepository.findById((long) post.getUserId());
+    @PostMapping("/post-owner")
+    //A method that finds postEntity's owner and sends result
+    public ResponseEntity findPostOwner(@RequestBody PostEntity postEntity) throws JsonProcessingException {
+        Optional<User> owner = userRepository.findById((long) postEntity.getUser_id());
         if (owner.isPresent()) {
-            String postOwner = owner.get().getUsername() + post.getUserId();
+            String postOwner = owner.get().getUsername() + postEntity.getUser_id();
             return ResponseEntity.ok(objectMapper.writeValueAsString(postOwner));
         } else return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     //____________Other____________
     //A method that has the function of checking whether the title is empty
-    private boolean emptyTitle(Post post) {
-        return !post.getTitle().isEmpty();
+    private boolean emptyTitle(PostEntity postEntity) {
+        return !postEntity.getTitle().isEmpty();
     }
 }

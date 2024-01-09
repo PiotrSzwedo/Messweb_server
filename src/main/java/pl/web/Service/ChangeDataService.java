@@ -1,0 +1,80 @@
+package pl.web.Service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import pl.web.Entity.Settings;
+import pl.web.Entity.User;
+import pl.web.Repository.SettingsRepository;
+import pl.web.Repository.UserRepository;
+
+import java.util.Optional;
+
+@Service
+public class ChangeDataService {
+    private final UserRepository userRepository;
+
+    private final SettingsRepository settingsRepository;
+
+    @Autowired
+    public ChangeDataService(UserRepository userRepository, SettingsRepository settingsRepository) {
+        this.userRepository = userRepository;
+        this.settingsRepository = settingsRepository;
+    }
+
+    public ResponseEntity<?> changeUserData(User user) {
+        Optional<User> user1 = userRepository.findUserAllById(user.getId());
+        if (user1.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (user.getStatus() != null && !user1.get().getStatus().equals(user.getStatus()) && !user.getStatus().isEmpty()) {
+            //Changing user status
+            user1.get().setStatus(user.getStatus());
+        }
+        if (user.getUsername() != null && !user1.get().getUsername().equals(user.getUsername()) && !user.getUsername().isEmpty()) {
+            //Changing user name
+            user1.get().setUsername(user.getUsername());
+        }
+        if (user.getPassword() != null && !user1.get().getPassword().equals(user.getPassword()) && !user.getPassword().isEmpty()) {
+            //Changing password
+            user1.get().setPassword(user.getPassword());
+        }
+        if (user.getEmail() != null && !user1.get().getEmail().equals(user.getEmail()) && !user.getEmail().isEmpty()) {
+            //Changing user e-mail
+            user1.get().setEmail(user.getEmail());
+        }
+        userRepository.save(user1.get());
+        return ResponseEntity.ok().build();
+    }
+
+    public ResponseEntity<?> changeVisibilitySettings(Settings settings) {
+        if (settings.getUserid() == null) return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        Optional<Settings> settingsOptional = settingsRepository.findByUserid(settings.getUserid());
+        if (settingsOptional.isEmpty()) return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+
+        if (settingsOptional.get().getShowEmail() != settings.getShowEmail() && settings.getShowEmail() != null)
+            settingsOptional.get().setShowEmail(settings.getShowEmail());
+
+        if (settingsOptional.get().getShowName() != settings.getShowName() && settings.getShowName() != null)
+            settingsOptional.get().setShowName(settings.getShowName());
+
+        if (settingsOptional.get().getShowStatus() != settings.getShowStatus() && settings.getShowStatus() != null)
+            settingsOptional.get().setShowStatus(settings.getShowStatus());
+
+        settingsRepository.save(settingsOptional.get());
+        return ResponseEntity.ok().build();
+    }
+
+    public void generateDefualtVisibilitySettings(User user) {
+        Optional<Settings> settingsOptional = settingsRepository.findByUserid(user.getId());
+        if (settingsOptional.isEmpty()) {
+            Settings settings = new Settings();
+            settings.setUserid(user.getId());
+            settings.setShowEmail(true);
+            settings.setShowName(true);
+            settings.setShowStatus(true);
+            settingsRepository.save(settings);
+        }
+    }
+}

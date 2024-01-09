@@ -11,11 +11,11 @@ import lombok.*;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @ToString
-public class Post {
+public class PostEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int userId;
+    private int user_id;
     private String body;
     @NonNull
     private String title;
@@ -24,8 +24,8 @@ public class Post {
         this.id = id;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setUser_id(int user_id) {
+        this.user_id = user_id;
     }
 
     public void setBody(String body) {
@@ -36,8 +36,8 @@ public class Post {
         return id;
     }
 
-    public int getUserId() {
-        return userId;
+    public int getUser_id() {
+        return user_id;
     }
 
     public String getBody() {
