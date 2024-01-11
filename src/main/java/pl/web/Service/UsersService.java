@@ -8,8 +8,8 @@ import pl.web.Entity.Settings;
 import pl.web.Entity.User;
 import pl.web.Model.EmailModel;
 import pl.web.Model.IdModel;
-import pl.web.Model.jwt.ListResponse;
-import pl.web.Model.jwt.UserResponse;
+import pl.web.Model.ListResponse;
+import pl.web.Model.UserResponse;
 import pl.web.Repository.SettingsRepository;
 import pl.web.Repository.UserRepository;
 
@@ -19,10 +19,14 @@ import java.util.Optional;
 
 @Service
 public class UsersService {
+    private final UserRepository userRepository;
+    private final SettingsRepository settingsRepository;
+
     @Autowired
-    UserRepository userRepository;
-    @Autowired
-    SettingsRepository settingsRepository;
+    public UsersService(UserRepository userRepository, SettingsRepository settingsRepository) {
+        this.userRepository = userRepository;
+        this.settingsRepository = settingsRepository;
+    }
 
     public ResponseEntity<?> removeUser(User user) {
         if (user.getEmail().isEmpty() || user.getUsername().isEmpty() || user.getId() == null) {

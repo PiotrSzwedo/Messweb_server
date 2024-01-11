@@ -12,6 +12,7 @@ import pl.web.Repository.UserRepository;
 import java.util.Optional;
 
 @Service
+// The class which is responsible for changing data in mysql server
 public class ChangeDataService {
     private final UserRepository userRepository;
 
@@ -23,6 +24,7 @@ public class ChangeDataService {
         this.settingsRepository = settingsRepository;
     }
 
+    // Function which change user data
     public ResponseEntity<?> changeUserData(User user) {
         Optional<User> user1 = userRepository.findUserAllById(user.getId());
         if (user1.isEmpty()) {
@@ -48,6 +50,7 @@ public class ChangeDataService {
         return ResponseEntity.ok().build();
     }
 
+    // Function which change visibility settings (settings that set visibility data on user profile)
     public ResponseEntity<?> changeVisibilitySettings(Settings settings) {
         if (settings.getUserid() == null) return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         Optional<Settings> settingsOptional = settingsRepository.findByUserid(settings.getUserid());
@@ -66,6 +69,7 @@ public class ChangeDataService {
         return ResponseEntity.ok().build();
     }
 
+    // Function that responsible for generate default visibility settings
     public void generateDefualtVisibilitySettings(User user) {
         Optional<Settings> settingsOptional = settingsRepository.findByUserid(user.getId());
         if (settingsOptional.isEmpty()) {

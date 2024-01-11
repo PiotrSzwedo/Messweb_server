@@ -1,6 +1,5 @@
 package pl.web.Controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,25 +16,29 @@ import pl.web.Service.AuthorizationService;
 import pl.web.Service.ChangeDataService;
 import pl.web.Service.UsersService;
 
-//The class responsible for acting on users
 @Controller
 @RequestMapping("/api/user")
+//The class responsible for controlling acting on a users
 public class UserController {
+    private final UsersService usersService;
+    private final AuthorizationService authorizationService;
+    private final ChangeDataService changeDataService;
+
     @Autowired
-    UsersService usersService;
-    @Autowired
-    AuthorizationService authorizationService;
-    @Autowired
-    ChangeDataService changeDataService;
+    public UserController(UsersService usersService, AuthorizationService authorizationService, ChangeDataService changeDataService) {
+        this.usersService = usersService;
+        this.authorizationService = authorizationService;
+        this.changeDataService = changeDataService;
+    }
 
     //___________GetMapping___________
     @GetMapping("/user")
-    public ResponseEntity users() throws JsonProcessingException {
+    public ResponseEntity users() {
         return usersService.getAllUsers();
     }
 
     //___________PostMapping___________
-    @PostMapping("/users")
+    @PostMapping("/register")
     public ResponseEntity<?> addUser(@RequestBody RegisterModel registerModel) {
         return authorizationService.register(registerModel);
     }
@@ -66,7 +69,7 @@ public class UserController {
     }
 
     @PostMapping("/admin-autorize")
-    public ResponseEntity<?> autorizeAdmin(@RequestBody IdModel idModel) {
-        return authorizationService.autorizeAdminStatus(idModel);
+    public ResponseEntity<?> authorizeAdmin(@RequestBody IdModel idModel) {
+        return authorizationService.authorizeAdminStatus(idModel);
     }
 }

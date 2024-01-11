@@ -1,4 +1,4 @@
-package pl.web.Model.jwt;
+package pl.web.Model;
 
 public class UserResponse {
 
