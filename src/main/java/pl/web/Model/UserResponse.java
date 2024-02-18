@@ -6,12 +6,21 @@ public class UserResponse {
     private String email;
     private Long id;
     private String status;
+    private String Tocken;
 
-    public UserResponse(String userName, String userEmail, Long userId, String status) {
-        this.username = userName;
-        this.email = userEmail;
-        this.id = userId;
+    public UserResponse(String username, String email, Long id, String status) {
+        this.username = username;
+        this.email = email;
+        this.id = id;
         this.status = status;
+    }
+
+    public UserResponse(String username, String email, Long id, String status, String tocken) {
+        this.username = username;
+        this.email = email;
+        this.id = id;
+        this.status = status;
+        Tocken = tocken;
     }
 
     public void setUsername(String username) {

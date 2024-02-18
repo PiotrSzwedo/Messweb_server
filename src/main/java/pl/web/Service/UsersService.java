@@ -3,6 +3,7 @@ package pl.web.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.web.Entity.Settings;
 import pl.web.Entity.User;
@@ -21,11 +22,13 @@ import java.util.Optional;
 public class UsersService {
     private final UserRepository userRepository;
     private final SettingsRepository settingsRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UsersService(UserRepository userRepository, SettingsRepository settingsRepository) {
+    public UsersService(UserRepository userRepository, SettingsRepository settingsRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.settingsRepository = settingsRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public ResponseEntity<?> removeUser(User user) {
@@ -48,7 +51,8 @@ public class UsersService {
                     userOptional.get().getUsername(),
                     userOptional.get().getEmail(),
                     userOptional.get().getId(),
-                    userOptional.get().getStatus()
+                    userOptional.get().getStatus(),
+                    null
             ));
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -70,6 +74,7 @@ public class UsersService {
     }
 
     public ResponseEntity<?> getAllUsers() {
+        System.err.println(passwordEncoder.encode("root"));
         List<User> users = userRepository.findAll();
         List<ListResponse> listResponses = new ArrayList<ListResponse>();
         if (users.isEmpty()) {
