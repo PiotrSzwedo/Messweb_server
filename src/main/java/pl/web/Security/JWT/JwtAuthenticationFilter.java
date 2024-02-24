@@ -10,26 +10,27 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pl.web.Entity.User;
+import pl.web.Repository.UserRepository;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 @AllArgsConstructor
 @NoArgsConstructor
-public class TokenFilter extends OncePerRequestFilter {
-    private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    public TokenFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
     }
+
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -37,28 +38,26 @@ public class TokenFilter extends OncePerRequestFilter {
             @NotNull HttpServletResponse response,
             @NotNull FilterChain filterChain
     ) throws ServletException, IOException {
-        final String tockenHeader = request.getHeader("Authorization");
-        final String jwtToken;
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
         final String userId;
-        if (tockenHeader == null || !tockenHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
-        jwtToken = tockenHeader.substring(7);
-        userId = jwtService.extractUserId(jwtToken);
-        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = (User) userDetailsService.loadUserByUsername(userId);
-            if (jwtService.TokenIsValid(jwtToken, user)) {
+        jwt = authHeader.substring(7); // Because a first 7 letters are "Bearer "
+        userId = jwtService.extractUserId(jwt);
+        if (userId !=  null && SecurityContextHolder.getContext().getAuthentication() != null){
+            Optional<User> user  = userRepository.findById(Long.valueOf(userId));
+            if (jwtService.tokenIsValid(jwt, String.valueOf(user.get().getId()))){
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         user,
                         null,
-                        user.getAuthorities()
-                );
-                authenticationToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
+                        user.get().getAuthorities()
                 );
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }
+        filterChain.doFilter(request, response);
     }
 }
