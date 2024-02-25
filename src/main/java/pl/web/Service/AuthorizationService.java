@@ -12,54 +12,68 @@ import pl.web.Model.IdModel;
 import pl.web.Model.LoginModel;
 import pl.web.Model.RegisterModel;
 import pl.web.Repository.UserRepository;
+import pl.web.Security.JWT.JwtService;
 
 import java.util.Optional;
 
 @Service
 // The Class that is responsible for authorization users
 public class AuthorizationService {
-    private final UserRepository userRepository;
-    private final ChangeDataService changeDataService;
-    private final PasswordEncoder passwordEncoder;
-
     @Autowired
-    public AuthorizationService(UserRepository userRepository, ChangeDataService changeDataService, PasswordEncoder passwordEncoder) {
+    public AuthorizationService(UserRepository userRepository, ChangeDataService changeDataService, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.changeDataService = changeDataService;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
+
+    private final UserRepository userRepository;
+    private final ChangeDataService changeDataService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     // The function which login users
     public ResponseEntity<?> login(@NotNull LoginModel loginModel) {
         if (loginModel.getPassword().isEmpty() || loginModel.getEmail().isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
-        Optional<User> userOptional = userRepository.findByEmail(loginModel.getEmail());
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            if (user.getStatus().equals("banned")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            } else if (user.getPassword().equals(loginModel.getPassword())) {
-                return ResponseEntity.ok().build();
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-        } else {
+        Optional<User> user = userRepository.findByEmail(loginModel.getEmail());
+        if (user.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+        if (user.get().getStatus().equals("banned")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (user.get().getPassword().equals(passwordEncoder.encode(loginModel.getPassword()))) {
+            return sendToken(new IdModel(user.get().getId()));
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     // The function which register new users
-    public ResponseEntity<?> register(@NotNull RegisterModel registerModel) {
-        if (registerModel.getEmail().isEmpty() || registerModel.getUsername().isEmpty() || registerModel.getPassword().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-        Optional<User> userFromDb = userRepository.findByEmail(registerModel.getEmail());
-        if (userFromDb.isPresent()) return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
-        registerModel.setPassword(passwordEncoder.encode(registerModel.getPassword()));
-        User savedUser = userRepository.save(new User(registerModel.getEmail(), registerModel.getUsername(), registerModel.getPassword(), "user"));
-        changeDataService.generateDefualtVisibilitySettings(savedUser);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> register(@NotNull RegisterModel registerModel, String status) {
+        if (userRepository.findByEmail(registerModel.getEmail()).isEmpty())
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        User user = createNewUser(registerModel, status);
+        userRepository.save(user);
+        changeDataService.generateDefualtVisibilitySettings(user);
+        return sendToken(new IdModel(user.getId()));
+    }
+
+    // The function which is responsible to sending token
+    private ResponseEntity<?> sendToken(IdModel idModel) {
+        String token = jwtService.generateToken(idModel);
+        return ResponseEntity.ok(token);
+    }
+
+    // The function that create new user entity from registering model
+    private User createNewUser(RegisterModel registerModel, String status) {
+        return new User(
+                registerModel.getEmail(),
+                registerModel.getUsername(),
+                passwordEncoder.encode(registerModel.getPassword()),
+                status
+        );
     }
 
     // The function that checks whether the user has administrator status

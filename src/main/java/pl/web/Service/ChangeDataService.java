@@ -71,6 +71,7 @@ public class ChangeDataService {
 
     // Function that responsible for generate default visibility settings
     public void generateDefualtVisibilitySettings(User user) {
+        if (userRepository.findById(user.getId()).isEmpty()) return;
         Optional<Settings> settingsOptional = settingsRepository.findByUserid(user.getId());
         if (settingsOptional.isEmpty()) {
             Settings settings = new Settings();

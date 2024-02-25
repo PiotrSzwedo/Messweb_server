@@ -40,7 +40,7 @@ public class UserController {
     //___________PostMapping___________
     @PostMapping("/register")
     public ResponseEntity<?> addUser(@RequestBody RegisterModel registerModel) {
-        return authorizationService.register(registerModel);
+        return authorizationService.register(registerModel, "user");
     }
 
     @PostMapping("/user-delete")
@@ -60,12 +60,12 @@ public class UserController {
 
     @PostMapping("/user-data")
     public ResponseEntity<?> getUserData(@RequestBody EmailModel emailModel) {
-        return usersService.getUserDataByEmail(emailModel);
+        return usersService.getUserData(emailModel);
     }
 
     @PostMapping("/user-data-id")
     public ResponseEntity<?> findById(@RequestBody IdModel idModel) {
-        return usersService.getUserDataById(idModel);
+        return usersService.getUserData(idModel);
     }
 
     @PostMapping("/admin-autorize")

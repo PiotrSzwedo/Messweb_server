@@ -41,7 +41,7 @@ public class UsersService {
         }
     }
 
-    public ResponseEntity<UserResponse> getUserDataByEmail(EmailModel emailModel) {
+    public ResponseEntity<UserResponse> getUserData(EmailModel emailModel) {
         if (emailModel.getEmail().isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
@@ -57,7 +57,7 @@ public class UsersService {
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    public ResponseEntity<?> getUserDataById(IdModel idModel) {
+    public ResponseEntity<?> getUserData(IdModel idModel) {
         if (idModel.getId() == null) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
