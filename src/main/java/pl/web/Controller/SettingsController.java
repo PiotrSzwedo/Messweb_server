@@ -1,27 +1,25 @@
 package pl.web.Controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import pl.web.Entity.Settings;
-import pl.web.Entity.User;
 import pl.web.Model.IdModel;
-import pl.web.Repository.SettingsRepository;
 import pl.web.Service.ChangeDataService;
 import pl.web.Service.UsersService;
-
-import java.util.Optional;
 
 @Controller
 public class SettingsController {
     @Autowired
+    public SettingsController(UsersService usersService, ChangeDataService changeDataService) {
+        this.usersService = usersService;
+        this.changeDataService = changeDataService;
+    }
+
     UsersService usersService;
-    @Autowired
     ChangeDataService changeDataService;
 
 

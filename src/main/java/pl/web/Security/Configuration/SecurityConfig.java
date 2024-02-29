@@ -1,5 +1,6 @@
 package pl.web.Security.Configuration;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import pl.web.Repository.UserRepository;
 import pl.web.Security.JWT.JwtAuthenticationFilter;
 
@@ -21,16 +24,12 @@ import pl.web.Security.JWT.JwtAuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig {
     @Autowired
-    public SecurityConfig(JwtAuthenticationFilter jwtFilter, AuthenticationProvider authenticationProvider, UserRepository userRepository) {
-        this.jwtFilter = jwtFilter;
-        this.authenticationProvider = authenticationProvider;
-        this.userRepository = userRepository;
-    }
+    private JwtAuthenticationFilter jwtFilter;
 
-    private final JwtAuthenticationFilter jwtFilter;
-
-    private final AuthenticationProvider authenticationProvider;
-    private final UserRepository userRepository;
+    @Autowired
+    private AuthenticationProvider authenticationProvider;
+    @Autowired
+    private UserRepository userRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -55,7 +54,7 @@ public class SecurityConfig {
         httpSecurity.csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("")
+                .requestMatchers("/api/user/login", "/api/user/register")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -68,4 +67,34 @@ public class SecurityConfig {
 
         return httpSecurity.build();
     }
+
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        final String clientHost = "http://localhost:3000";
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(@NotNull CorsRegistry registry) {
+//                registry.addMapping("/**").allowedOrigins(clientHost);
+//                // links with is responsible for operation on users
+//                registry.addMapping("/api/user/register").allowedOrigins(clientHost);
+//                registry.addMapping("/api/user/login").allowedOrigins(clientHost);
+//                registry.addMapping("/api/user/user-delete").allowedOrigins(clientHost);
+//                registry.addMapping("/api/user/admin-autorize").allowedOrigins(clientHost);
+//                //changing data
+//                registry.addMapping("/api/user/user-data-change").allowedOrigins(clientHost);
+//                //downloand data
+//                registry.addMapping("/api/user/user-data").allowedOrigins(clientHost);
+//                registry.addMapping("/api/user/user-data-id").allowedOrigins(clientHost);
+//                registry.addMapping("/api/user/user").allowedOrigins(clientHost);
+//                registry.addMapping("/settings").allowedOrigins(clientHost);
+//                // links with is responsible for operation on posts
+//                registry.addMapping("/posts").allowedOrigins(clientHost);
+//                registry.addMapping("/post-id").allowedOrigins(clientHost);
+//                registry.addMapping("/post-title").allowedOrigins(clientHost);
+//                registry.addMapping("/post-add").allowedOrigins(clientHost);
+//                registry.addMapping("/post-delete").allowedOrigins(clientHost);
+//                registry.addMapping("/post-owner").allowedOrigins(clientHost);
+//            }
+//        };
+//    }
 }

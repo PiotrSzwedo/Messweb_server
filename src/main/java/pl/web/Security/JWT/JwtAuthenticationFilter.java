@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 @Component
-@AllArgsConstructor
-@NoArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -47,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         jwt = authHeader.substring(7); // Because a first 7 letters are "Bearer "
         userId = jwtService.extractUserId(jwt);
-        if (userId !=  null && SecurityContextHolder.getContext().getAuthentication() != null){
+        if (userId != null){
             Optional<User> user  = userRepository.findById(Long.valueOf(userId));
             if (jwtService.tokenIsValid(jwt, String.valueOf(user.get().getId()))){
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(

@@ -33,11 +33,7 @@ public class JwtService {
 
     //Function that extract all claims from token
     private Claims extractAllClaim(String token){
-        return Jwts.parserBuilder()
-                .setSigningKey(getKey())
-                .build()
-                .parseClaimsJwt(token)
-                .getBody();
+        return Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token).getBody();
     }
 
     //Function that generate new token without map<String, Object> argument
@@ -62,7 +58,7 @@ public class JwtService {
     }
 
     private boolean isTokenActive(String token) {
-        return extractExpiration(token).before(new Date());
+        return !extractExpiration(token).before(new Date());
     }
 
     private Date extractExpiration(String token) {

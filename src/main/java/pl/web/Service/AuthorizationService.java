@@ -4,9 +4,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import pl.web.Entity.User;
 import pl.web.Model.IdModel;
 import pl.web.Model.LoginModel;
@@ -34,9 +34,6 @@ public class AuthorizationService {
 
     // The function which login users
     public ResponseEntity<?> login(@NotNull LoginModel loginModel) {
-        if (loginModel.getPassword().isEmpty() || loginModel.getEmail().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
         Optional<User> user = userRepository.findByEmail(loginModel.getEmail());
         if (user.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -44,12 +41,14 @@ public class AuthorizationService {
         if (user.get().getStatus().equals("banned")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        if (user.get().getPassword().equals(passwordEncoder.encode(loginModel.getPassword()))) {
-            return sendToken(new IdModel(user.get().getId()));
+        if (checkPassword(loginModel.getPassword(), user.get().getPassword())) {
+            return sendToken(user.get().getId());
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
-
+    public boolean checkPassword(String password, String passwordFromDataBase) {
+        return BCrypt.checkpw(password, passwordFromDataBase);
+    }
     // The function which register new users
     public ResponseEntity<?> register(@NotNull RegisterModel registerModel, String status) {
         if (userRepository.findByEmail(registerModel.getEmail()).isEmpty())
@@ -57,12 +56,12 @@ public class AuthorizationService {
         User user = createNewUser(registerModel, status);
         userRepository.save(user);
         changeDataService.generateDefualtVisibilitySettings(user);
-        return sendToken(new IdModel(user.getId()));
+        return sendToken(user.getId());
     }
 
     // The function which is responsible to sending token
-    private ResponseEntity<?> sendToken(IdModel idModel) {
-        String token = jwtService.generateToken(idModel);
+    private ResponseEntity<?> sendToken(Long id) {
+        String token = jwtService.generateToken(new IdModel(id));
         return ResponseEntity.ok(token);
     }
 
@@ -77,11 +76,15 @@ public class AuthorizationService {
     }
 
     // The function that checks whether the user has administrator status
-    public ResponseEntity<?> authorizeAdminStatus(@NotNull @RequestBody IdModel idModel) {
+    public ResponseEntity<?> authorizeAdminStatus(@NotNull IdModel idModel) {
         Optional<User> userOptional = userRepository.findUserAllById(idModel.getId());
         if (userOptional.isEmpty() || !userOptional.get().getStatus().equals("admin")) {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } else return ResponseEntity.ok().build();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    private void passwordIsEncode(String password){
+
     }
 }
