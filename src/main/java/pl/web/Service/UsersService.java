@@ -44,12 +44,14 @@ public class UsersService extends AccessChecking {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
         Optional<User> userOptional = userRepository.findByEmail(emailModel.getEmail());
-        return userOptional.map(user -> {
-            return ResponseEntity.ok(generateUserResponse(userOptional, true));
-        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+        return ResponseEntity.ok(generateUserResponse(userOptional, true));
     }
 
     public ResponseEntity<?> getMyData(@NotNull IdModel idModel) {
+        if (idModel.getId() == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         Optional<User> userOp = userRepository.findById(idModel.getId());
         if (userOp.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

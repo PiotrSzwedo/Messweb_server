@@ -7,12 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import pl.web.Entity.User;
 import pl.web.Model.IdModel;
 import pl.web.Model.LoginModel;
 import pl.web.Model.RegisterModel;
 import pl.web.Repository.UserRepository;
 import pl.web.Security.JWT.JwtService;
+import pl.web.Security.JWT.Token;
 
 import java.util.Optional;
 
@@ -33,22 +35,24 @@ public class AuthorizationService {
     private final JwtService jwtService;
 
     // The function which login users
-    public ResponseEntity<?> login(@NotNull LoginModel loginModel) {
-        Optional<User> user = userRepository.findByEmail(loginModel.getEmail());
-        if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        if (user.get().getStatus().equals("banned")) {
+    public ResponseEntity<?> login(LoginModel loginModel) {
+        User user = userRepository.findByPhoneNumber(loginModel.getEmail())
+                .orElse(userRepository.findByEmail(loginModel.getEmail())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")));
+
+        if (user.getStatus().equals("banned")) // if user is banned
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        if (checkPassword(loginModel.getPassword(), user.get().getPassword())) {
-            return sendToken(user.get().getId());
-        }
+
+        if (checkPassword(loginModel.getPassword(), user.getPassword())) // if given password is a users password
+            return sendToken(user.getId());
+
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+
     public boolean checkPassword(String password, String passwordFromDataBase) {
         return BCrypt.checkpw(password, passwordFromDataBase);
     }
+
     // The function which register new users
     public ResponseEntity<?> register(@NotNull RegisterModel registerModel, String status) {
         if (userRepository.findByEmail(registerModel.getEmail()).isEmpty())
@@ -61,7 +65,7 @@ public class AuthorizationService {
 
     // The function which is responsible to sending token
     private ResponseEntity<?> sendToken(Long id) {
-        String token = jwtService.generateToken(new IdModel(id));
+        Token token = new Token(jwtService.generateToken(new IdModel(id)));
         return ResponseEntity.ok(token);
     }
 
@@ -82,9 +86,5 @@ public class AuthorizationService {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } else return ResponseEntity.ok().build();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
-
-    private void passwordIsEncode(String password){
-
     }
 }

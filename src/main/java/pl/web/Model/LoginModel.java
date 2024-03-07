@@ -11,6 +11,8 @@ import lombok.Setter;
 @Setter
 public class LoginModel {
     private String email;
+
+
     private String password;
 
     public void setEmail(String email) {
@@ -24,7 +26,6 @@ public class LoginModel {
     public String getEmail() {
         return email;
     }
-
     public String getPassword() {
         return password;
     }

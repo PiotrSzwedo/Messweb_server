@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 
 @Entity
@@ -29,8 +28,16 @@ public class User implements UserDetails {
 
     @NonNull
     private String password;
-
+    private String phone;
     private String status;
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
 
     public User() {
     }
